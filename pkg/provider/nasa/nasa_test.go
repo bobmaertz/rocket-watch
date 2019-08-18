@@ -3,6 +3,7 @@ package nasa
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -16,11 +17,12 @@ func TestGetNasaLaunches(t *testing.T) {
 	tc := []struct {
 		name          string
 		expectedError bool
-		from          int
 		size          int
+		from          time.Time
+		to            time.Time
 	}{
-		{"testGetNext10Launches", false, 0, 10}, // test default getLaunch
-		{"testGetNextLaunch", false, 0, 1},      // test size getLaunch
+		{"testGetNext10Launches", false, 10, time.Now(), time.Now().AddDate(10, 0, 0)}, // test default getLaunch
+		{"testGetNextLaunch", false, 1, time.Now(), time.Now().AddDate(10, 0, 0)},      // test size getLaunch
 
 	}
 
@@ -29,7 +31,7 @@ func TestGetNasaLaunches(t *testing.T) {
 			prov, err := NewProvider()
 			require.NoError(t, err)
 
-			resp, err := prov.GetLaunches(test.from, test.size)
+			resp, err := prov.GetLaunches(test.from, test.to, test.size)
 
 			if test.expectedError {
 				require.Error(t, err)

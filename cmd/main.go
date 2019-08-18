@@ -37,7 +37,10 @@ func main() {
 			os.Exit(2)
 		}
 
-		resp, err := prov.GetLaunches(0, 10)
+		from := time.Now()
+		to := from.AddDate(10, 0, 0)
+
+		resp, err := prov.GetLaunches(from, to, 10)
 		fmt.Println("--------------------------")
 		fmt.Println("Requesting from source: ", sourceName)
 

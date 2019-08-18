@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strconv"
+	"time"
 )
 
 //ProviderImpl is the NASA source
@@ -17,14 +20,29 @@ type ProviderImpl struct {
 func NewProvider() (*ProviderImpl, error) {
 	client := &http.Client{}
 
-	return &ProviderImpl{client: client, url: "https://www.nasa.gov/api/2/"}, nil
+	return &ProviderImpl{client: client, url: "https://www.nasa.gov/api/2"}, nil
 }
 
 // GetLaunches gets upcoming launches from Nasa calendar
-func (p *ProviderImpl) GetLaunches(from, size int) (*Response, error) {
+func (p *ProviderImpl) GetLaunches(from, to time.Time, size int) (*Response, error) {
+	timeFormat := "2006-01-02T15:04:05-07:00"
 
-	request := fmt.Sprintf("%s/calendar-event/_search?size=%d&from=%d&q=calendar-name:6089", p.url, size, from)
-	r, err := p.client.Get(request)
+	t := to.Format(timeFormat)
+	f := from.Format(timeFormat)
+	//TODO: Build query string more dynamically
+
+	baseURL, err := url.Parse(p.url)
+	baseURL.Path += "/calendar-event/_search"
+
+	params := url.Values{}
+	params.Add("size", strconv.Itoa(size))
+	params.Add("from", "0")
+	params.Add("sort", "event-date.value")
+	q := fmt.Sprintf("(((calendar-name:6089) AND (event-date.value:[%s TO %s] OR event-date.value2:[%s TO %s]) AND event-date-count:1))", f, t, f, t)
+	params.Add("q", q)
+
+	baseURL.RawQuery = params.Encode()
+	r, err := p.client.Get(baseURL.String())
 
 	if err != nil {
 		return nil, err
