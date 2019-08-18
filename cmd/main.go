@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
-	"time"
-	"os"
 	"fmt"
+	"os"
+	"time"
 
-	n "github.com/bou1der/rocket-watch/pkg/provider/nasa"
+	nasa "github.com/bou1der/rocket-watch/pkg/provider/nasa"
 )
 
 // DataSource describes where the launch data came from.
@@ -32,9 +32,16 @@ var (
 func main() {
 	flag.Parse()
 
-	prov, err := n.NewProvider()
+	sourceName := "NASA"
+	prov, err := nasa.NewProvider()
+	if err != nil {
+		fmt.Printf(err.Error())
+		os.Exit(2)
+	}
 
-	resp, err := prov.GetLaunches()
+	resp, err := prov.GetLaunches(0, 10)
+	fmt.Println("--------------------------")
+	fmt.Println("Requesting from source: ", sourceName)
 
 	if err != nil {
 		fmt.Printf(err.Error())
@@ -42,7 +49,11 @@ func main() {
 	}
 
 	for i, hit := range resp.Hits.Hits {
+		fmt.Println("--------------------------")
 		fmt.Println("Launch: ", i)
-		fmt.Println(hit.Source.Description)
+		fmt.Println("Title: ", hit.Source.Title)
+		fmt.Println("Source: ", sourceName)
+		fmt.Println("Expected Launch Date: ", hit.Source.EventDate[0].Value)
+		fmt.Println("Description: ", hit.Source.Description)
 	}
 }

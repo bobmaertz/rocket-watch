@@ -7,25 +7,30 @@ import (
 )
 
 func TestGetNasaLaunches(t *testing.T) {
-	
-	tc := []struct{
-		name string
+
+	tc := []struct {
+		name          string
 		expectedError bool
+		from          int
+		size          int
 	}{
-		{"testDefault", false}, // test default getLaunch
+		{"testGetNext10Launches", false, 0, 10}, // test default getLaunch
+		{"testGetNextLaunch", false, 0, 1},      // test size getLaunch
+
 	}
-	
+
 	for _, test := range tc {
 		t.Run(test.name, func(t *testing.T) {
 			prov, err := NewProvider()
-			require.NoError(t,err)
+			require.NoError(t, err)
 
-			_, err = prov.GetLaunches()
+			resp, err := prov.GetLaunches(test.from, test.size)
 
 			if test.expectedError {
 				require.Error(t, err)
-			}else {
-				require.NoError(t,err)
+			} else {
+				require.Equal(t, len(resp.Hits.Hits), test.size)
+				require.NoError(t, err)
 			}
 		})
 	}

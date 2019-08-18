@@ -2,6 +2,7 @@ package nasa
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -15,16 +16,24 @@ type ProviderImpl struct {
 func NewProvider() (*ProviderImpl, error) {
 	client := &http.Client{}
 
- 	return &ProviderImpl{client: client, url: "https://www.nasa.gov/api/2/"}, nil
+	return &ProviderImpl{client: client, url: "https://www.nasa.gov/api/2/"}, nil
 }
 
 // GetLaunches gets upcoming launches from Nasa Calendar
-func (p *ProviderImpl) GetLaunches() (*Response, error) {
-	r, err := p.client.Get("https://www.nasa.gov/api/2/calendar-event/_search?size=100&from=0&q=calendar-name:6089")
+func (p *ProviderImpl) GetLaunches(from, size int) (*Response, error) {
+
+	request := fmt.Sprintf("%s/calendar-event/_search?size=%d&from=%d&q=calendar-name:6089", p.url, size, from)
+	r, err := p.client.Get(request)
 
 	if err != nil {
 		return nil, err
 	}
+
+	if r.StatusCode != 200 {
+		err := fmt.Errorf("Error retrieving data from source: %s", r.Status)
+		return nil, err
+	}
+
 	defer r.Body.Close()
 
 	res := &Response{}
@@ -39,8 +48,7 @@ func (p *ProviderImpl) GetLaunches() (*Response, error) {
 	return res, nil
 }
 
-//Nasa Calendar Response
-
+//Response is the a nasa API query response
 type Response struct {
 	Took     int     `json:"took"`
 	TimedOut bool    `json:"timed_out"`

@@ -1,3 +1,6 @@
+#Default binary name 
+watch
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
