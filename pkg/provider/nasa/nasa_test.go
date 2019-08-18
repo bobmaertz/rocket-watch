@@ -1,12 +1,17 @@
 package nasa
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetNasaLaunches(t *testing.T) {
+
+	if os.Getenv("TEST-LIVE") == "" {
+		t.Skip()
+	}
 
 	tc := []struct {
 		name          string

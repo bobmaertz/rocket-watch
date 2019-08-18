@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+//ProviderImpl is the NASA source
 type ProviderImpl struct {
 	client *http.Client
 	url    string
@@ -19,7 +20,7 @@ func NewProvider() (*ProviderImpl, error) {
 	return &ProviderImpl{client: client, url: "https://www.nasa.gov/api/2/"}, nil
 }
 
-// GetLaunches gets upcoming launches from Nasa Calendar
+// GetLaunches gets upcoming launches from Nasa calendar
 func (p *ProviderImpl) GetLaunches(from, size int) (*Response, error) {
 
 	request := fmt.Sprintf("%s/calendar-event/_search?size=%d&from=%d&q=calendar-name:6089", p.url, size, from)
@@ -48,23 +49,31 @@ func (p *ProviderImpl) GetLaunches(from, size int) (*Response, error) {
 	return res, nil
 }
 
-//Response is the a nasa API query response
+//Response is the provided nasa API query response
 type Response struct {
-	Took     int     `json:"took"`
-	TimedOut bool    `json:"timed_out"`
-	Shards   Shards  `json:"_shards"`
-	Hits     BigHits `json:"Hits"`
+	Took     int         `json:"took"`
+	TimedOut bool        `json:"timed_out"`
+	Shards   Shards      `json:"_shards"`
+	Hits     HitsWrapper `json:"Hits"`
 }
+
+//TODO: Not sure what this data "Shards" is for, find out and fix this.
+
+//Shards - provides ...
 type Shards struct {
 	Total      int `json:"total"`
 	Successful int `json:"successful"`
 	Failed     int `json:"failed"`
 }
+
+//AdditionalLink1 provides additiona link metadata
 type AdditionalLink1 struct {
 	URL        string        `json:"url"`
 	Title      string        `json:"title"`
 	Attributes []interface{} `json:"attributes"`
 }
+
+//EventDate provides two date/time values and other relevant time information
 type EventDate struct {
 	Value      string      `json:"value"`
 	Value2     string      `json:"value2"`
@@ -81,6 +90,7 @@ type MasterImage struct {
 	Height string `json:"height"`
 }
 
+//Source contains event information
 type Source struct {
 	EventDateCount  int               `json:"event-date-count"`
 	Title           string            `json:"title"`
@@ -97,6 +107,7 @@ type Source struct {
 	MasterImage     MasterImage       `json:"master-image"`
 }
 
+//Hits is the object being queried
 type Hits struct {
 	Index  string  `json:"_index"`
 	Type   string  `json:"_type"`
@@ -105,7 +116,8 @@ type Hits struct {
 	Source Source  `json:"_source,omitempty"`
 }
 
-type BigHits struct {
+//HitsWrapper is a wrapper struct for the result "hits"
+type HitsWrapper struct {
 	Total    int     `json:"total"`
 	MaxScore float64 `json:"max_score"`
 	Hits     []Hits  `json:"hits"`
